@@ -1,4 +1,3 @@
-import 'DrinkModel.dart';
 import 'OrderModel.dart';
 
 class TableModel{
@@ -9,6 +8,8 @@ class TableModel{
   bool isDone;
   DateTime endDate;
   int totalMoney;
+  int drinkCount;
+  bool isNew;
   TableModel(int id)
   {
     this.tableID = id;
@@ -16,5 +17,7 @@ class TableModel{
     isPaid = false;
     isDone = false;
     totalMoney = 0;
+    drinkCount = 0;
+    isNew = true;
   }
 }

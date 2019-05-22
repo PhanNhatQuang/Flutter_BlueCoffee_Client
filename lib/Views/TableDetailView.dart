@@ -1,6 +1,5 @@
-import 'package:bluecoffee_client/Bloc/Order/MenuBloc.dart';
+import 'package:bluecoffee_client/Bloc/Menu/MenuBloc.dart';
 import 'package:bluecoffee_client/Bloc/Table/TableState.dart';
-import 'package:bluecoffee_client/Model/DrinkModel.dart';
 import 'package:bluecoffee_client/Model/OrderModel.dart';
 import 'package:bluecoffee_client/Model/TableModel.dart';
 import 'package:bluecoffee_client/Theme.dart' as Theme;
@@ -10,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'MenuView.dart';
+import 'MenuView_NewUI.dart';
 
 class TableDetailView extends StatefulWidget {
   TableBloc m_TableBloc;
@@ -31,27 +30,32 @@ class TableDetailViewState extends State<TableDetailView> {
     super.dispose();
   }
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
     final double bottomNavigationBarHeight =
         MediaQuery.of(context).padding.bottom;
     final double barHeight = 60.0;
-
+    
+    
     return new BlocBuilder(
       bloc: m_TableBloc,
       builder: (BuildContext context, TableState tableState) {
         int _drinkCount = 0, _totalMonney = 0;
+        String _bottomBarAction;
+        tableState.m_Table.isNew ? _bottomBarAction = 'Xong' : _bottomBarAction = 'Tính tiền';
 
         tableState.m_Table.orders.forEach((order) {
           _drinkCount += order.amount;
           _totalMonney += order.drink.drinkPrice * order.amount;
         });
         return new Scaffold(
+            key: _scaffoldKey,
             floatingActionButton: new IconButton(
               onPressed: () {
                 Navigator.of(context)
                     .push<TableModel>(new MaterialPageRoute(builder: (context) {
-                  return new MenuView(new MenuBloc(m_TableBloc));
+                  return new MenuView_NewUI(new MenuBloc(m_TableBloc));
                 })).then<TableModel>((onValue) {
                   if (onValue?.orders != null) {
                     this.m_TableBloc.setTable(onValue);
@@ -86,13 +90,13 @@ class TableDetailViewState extends State<TableDetailView> {
                         child: new FlatButton(
                           onPressed: () {
                             tableState.m_Table.isPaid = true;
-                            Navigator.of(context)
-                                .pop(tableState.m_Table);
+                            tableState.m_Table.isNew = false;
+                            Navigator.of(context).pop(tableState.m_Table);
                           },
                           child: new Row(
                             children: <Widget>[
                               new Text(
-                                'Tính Tiền',
+                                '${_bottomBarAction}',
                                 style: Theme.TextStyles.appBarTitle,
                               ),
                               new Icon(Icons.arrow_forward_ios,

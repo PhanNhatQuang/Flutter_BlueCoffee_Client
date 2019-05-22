@@ -1,4 +1,4 @@
-import 'package:bluecoffee_client/Bloc/Order/MenuBloc.dart';
+import 'package:bluecoffee_client/Bloc/Menu/MenuBloc.dart';
 import 'package:bluecoffee_client/Bloc/Table/TableBloc.dart';
 import 'package:bluecoffee_client/Bloc/Tables/TablesBloc.dart';
 import 'package:bluecoffee_client/Bloc/Tables/TablesState.dart';
@@ -12,6 +12,7 @@ import 'dart:math';
 import 'package:bluecoffee_client/Theme.dart' as Theme;
 
 import '../GradientAppBar.dart';
+import 'MenuView_NewUI.dart';
 import 'TableDetailView.dart';
 
 class TablesView extends StatefulWidget {
@@ -116,6 +117,7 @@ class TablesViewState extends State<TablesView> {
     );
   }
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
     final _bloc = BlocProvider.of<TablesBloc>(context);
@@ -123,13 +125,15 @@ class TablesViewState extends State<TablesView> {
         bloc: _bloc,
         builder: (BuildContext context, TablesState tablesState) {
           return new Scaffold(
+            key: _scaffoldKey,
             floatingActionButton: new IconButton(
               onPressed: () {
                 Navigator.of(context)
                     .push<TableModel>(new MaterialPageRoute(builder: (context) {
                   var _table = new TableModel(Random().nextInt(99));
                   var _tableBloc = new TableBloc(_table);
-                  return new MenuView(new MenuBloc(_tableBloc));
+                  //return new MenuView(new MenuBloc(_tableBloc));
+                  return new MenuView_NewUI(new MenuBloc(_tableBloc));
                 }))
                       ..then<TableModel>((onValue) {
                         if (onValue?.orders != null) {

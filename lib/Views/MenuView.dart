@@ -1,7 +1,7 @@
 import 'dart:math';
 
-import 'package:bluecoffee_client/Bloc/Order/MenuBloc.dart';
-import 'package:bluecoffee_client/Bloc/Order/MenuState.dart';
+import 'package:bluecoffee_client/Bloc/Menu/MenuBloc.dart';
+import 'package:bluecoffee_client/Bloc/Menu/MenuState.dart';
 import 'package:bluecoffee_client/Bloc/Table/TableBloc.dart';
 import 'package:bluecoffee_client/GradientAppBar.dart';
 import 'package:bluecoffee_client/Model/DrinkModel.dart';
@@ -132,6 +132,8 @@ class MenuViewState extends State<MenuView> {
     );
   }
 
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
     /////////////////////////////////
@@ -152,6 +154,7 @@ class MenuViewState extends State<MenuView> {
         bloc: menuBloc,
         builder: (BuildContext context, MenuState menuState) {
           return new Scaffold(
+            key: _scaffoldKey,
             //appBar: new AppBar(title: new Text('Menu')),
             backgroundColor: Theme.Colors.planetPageBackground,
             body: new Column(

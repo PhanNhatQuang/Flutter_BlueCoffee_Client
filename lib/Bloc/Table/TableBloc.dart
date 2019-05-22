@@ -34,6 +34,7 @@ class TableBloc extends Bloc<TableEvent, TableState> {
         m_Table.orders.add(new OrderModel(event.m_Drink, 1));
       }
       m_Table.totalMoney+=event.m_Drink.drinkPrice;
+      m_Table.drinkCount++;
     } else if (event is RemoveOrders) {
       if (m_Table.orders != null) {
         var _order = m_Table.orders.firstWhere((order) => order.drink.drinkID == event.m_Drink.drinkID);
