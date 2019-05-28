@@ -6,6 +6,7 @@ import 'package:bluecoffee_client/Bloc/Table/TableBloc.dart';
 import 'package:bluecoffee_client/GradientAppBar.dart';
 import 'package:bluecoffee_client/Model/DrinkModel.dart';
 import 'package:bluecoffee_client/Model/OrderModel.dart';
+import 'package:bluecoffee_client/ServerListener/ServerListener.dart';
 import 'package:bluecoffee_client/Theme.dart' as Theme;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +23,7 @@ class MenuView extends StatefulWidget {
   }
 }
 
-class MenuViewState extends State<MenuView> {
+class MenuViewState extends State<MenuView> implements StateListener {
   List<DrinkModel> _menu;
   MenuViewState(this.menuBloc);
   MenuBloc menuBloc;
@@ -35,10 +36,11 @@ class MenuViewState extends State<MenuView> {
 
   ///////////////////////////////////////////////////
   Widget _createMenuItem1(BuildContext context, int index, OrderModel _iOrder) {
+    print(_iOrder.toJson());
     final drinkImage = new Container(
       alignment: new FractionalOffset(0.0, 0.5),
       child: new Hero(
-        tag: 'planet-icon-$index',
+        tag: 'menu-item-$index',
         child: new CircleAvatar(
           child: new Text(
             'IMG',
@@ -137,13 +139,7 @@ class MenuViewState extends State<MenuView> {
   @override
   Widget build(BuildContext context) {
     /////////////////////////////////
-    _menu = new List<DrinkModel>();
-    var listName = generateWordPairs().take(20);
-    listName.toList().asMap().forEach((index, Name) {
-      var drink =
-          new DrinkModel(index, Name.asPascalCase, Random().nextInt(20000), "");
-      _menu.add(drink);
-    });
+    
 
     ////////////////////////////////mock data
     final double bottomNavigationBarHeight =
@@ -178,7 +174,7 @@ class MenuViewState extends State<MenuView> {
                         });
                       }
                       return _createMenuItem1(context, index,
-                          new OrderModel(_menu[index], drinkCount));
+                          new OrderModel(drink:_menu[index],amount: drinkCount));
                     },
                   ),
                 ),
@@ -237,5 +233,15 @@ class MenuViewState extends State<MenuView> {
             ),
           );
         });
+  }
+  @override
+  initState(){  
+    super.initState();   
+    var stateProvider = new StateProvider();
+    stateProvider.subscribe(this);
+  }
+  @override
+  void onStateChanged(ServerState state) {
+    // TODO: implement onStateChanged
   }
 }

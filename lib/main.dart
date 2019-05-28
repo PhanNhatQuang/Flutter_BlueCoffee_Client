@@ -1,14 +1,17 @@
 import 'package:bluecoffee_client/Bloc/Tables/TablesBloc.dart';
+import 'package:bluecoffee_client/FileHelper.dart';
 import 'package:flutter/material.dart';
 
 import 'Model/TableModel.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'ServerListener/ServerListener.dart';
 import 'Views/TablesView.dart';
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
+  
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -39,21 +42,37 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  static List<TableModel> _tables = new List<TableModel>();
-  final _bloc = TablesBloc(_tables);
+class _MyHomePageState extends State<MyHomePage> implements StateListener {
+  List<TableModel> _tables = new List<TableModel>();
+  TablesBloc _bloc;
   @override
   Widget build(BuildContext context) {
+    _bloc = TablesBloc(_tables);
     return BlocProvider<TablesBloc>(
       bloc: _bloc,
       child: new TablesView(),
     );
-    //return MyBlocProvider(child: new ListTable(), bloc: _bloc,);
   }
 
   @override
   void dispose() {
     this._bloc.dispose();
     super.dispose();
+  }
+  @override
+  initState(){  
+    //TODO: read menu from asset
+    //TODO: check server command (Add drink to menu, remove drink from menu, add table if exists)
+    super.initState();
+    FileHelper.requestWritePermission();
+    FileHelper.createDir(); 
+    FileHelper.loadMenu();
+    var stateProvider = new StateProvider();
+    stateProvider.subscribe(this);
+  }
+
+  @override
+  void onStateChanged(ServerState state) {
+    // TODO: implement onStateChanged
   }
 }

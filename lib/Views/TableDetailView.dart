@@ -2,6 +2,7 @@ import 'package:bluecoffee_client/Bloc/Menu/MenuBloc.dart';
 import 'package:bluecoffee_client/Bloc/Table/TableState.dart';
 import 'package:bluecoffee_client/Model/OrderModel.dart';
 import 'package:bluecoffee_client/Model/TableModel.dart';
+import 'package:bluecoffee_client/ServerListener/ServerListener.dart';
 import 'package:bluecoffee_client/Theme.dart' as Theme;
 import 'package:bluecoffee_client/Bloc/Table/TableBloc.dart';
 import 'package:flutter/cupertino.dart';
@@ -20,7 +21,7 @@ class TableDetailView extends StatefulWidget {
   }
 }
 
-class TableDetailViewState extends State<TableDetailView> {
+class TableDetailViewState extends State<TableDetailView> implements StateListener {
   TableBloc m_TableBloc;
   TableDetailViewState(this.m_TableBloc);
 
@@ -36,14 +37,12 @@ class TableDetailViewState extends State<TableDetailView> {
     final double bottomNavigationBarHeight =
         MediaQuery.of(context).padding.bottom;
     final double barHeight = 60.0;
-    
-    
+
     return new BlocBuilder(
       bloc: m_TableBloc,
       builder: (BuildContext context, TableState tableState) {
         int _drinkCount = 0, _totalMonney = 0;
-        String _bottomBarAction;
-        tableState.m_Table.isNew ? _bottomBarAction = 'Xong' : _bottomBarAction = 'Tính tiền';
+        String _bottomBarAction = 'Tính tiền';
 
         tableState.m_Table.orders.forEach((order) {
           _drinkCount += order.amount;
@@ -55,11 +54,12 @@ class TableDetailViewState extends State<TableDetailView> {
               onPressed: () {
                 Navigator.of(context)
                     .push<TableModel>(new MaterialPageRoute(builder: (context) {
-                  return new MenuView_NewUI(new MenuBloc(m_TableBloc));
+                  return new MenuView_NewUI(new MenuBloc(new TableBloc(tableState.m_Table)));
                 })).then<TableModel>((onValue) {
                   if (onValue?.orders != null) {
                     this.m_TableBloc.setTable(onValue);
-                  }
+                    Navigator.of(context).pop(tableState.m_Table);
+                  }                  
                 });
               },
               icon: new Icon(Icons.add_circle),
@@ -90,7 +90,7 @@ class TableDetailViewState extends State<TableDetailView> {
                         child: new FlatButton(
                           onPressed: () {
                             tableState.m_Table.isPaid = true;
-                            tableState.m_Table.isNew = false;
+                            print(tableState.m_Table.toJson());
                             Navigator.of(context).pop(tableState.m_Table);
                           },
                           child: new Row(
@@ -146,7 +146,7 @@ class TableDetailViewState extends State<TableDetailView> {
     final tableIcon = new Container(
       alignment: new FractionalOffset(0.5, 0.2),
       child: new Hero(
-        tag: 'planet-icon-${this.m_TableBloc.getTable.tableID}',
+        tag: 'table-card-${this.m_TableBloc.getTable.tableID}',
         child: new CircleAvatar(
           child: new Text(
             '${this.m_TableBloc.getTable.tableID}',
@@ -216,10 +216,11 @@ class TableDetailViewState extends State<TableDetailView> {
 
 //////////////////////////////////////////////////////////////////////////////
   Widget _createListItem(BuildContext context, int index, OrderModel _iOrder) {
+    //print(_iOrder.toJson());
     final drinkImage = new Container(
       alignment: new FractionalOffset(0.0, 0.5),
       child: new Hero(
-        tag: 'planet-icon-$index',
+        tag: 'order-item-$index',
         child: new CircleAvatar(
           child: new Text(
             'IMG',
@@ -303,5 +304,16 @@ class TableDetailViewState extends State<TableDetailView> {
         ),
       ),
     );
+  }
+
+  @override
+  initState(){  
+    super.initState();   
+    var stateProvider = new StateProvider();
+    stateProvider.subscribe(this);
+  } 
+  @override
+  void onStateChanged(ServerState state) {
+    // TODO: implement onStateChanged
   }
 }

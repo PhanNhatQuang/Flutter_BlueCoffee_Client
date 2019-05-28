@@ -1,4 +1,3 @@
-import 'package:bluecoffee_client/Model/DrinkModel.dart';
 import 'package:bluecoffee_client/Model/TableModel.dart';
 
 import 'TablesEvent.dart';

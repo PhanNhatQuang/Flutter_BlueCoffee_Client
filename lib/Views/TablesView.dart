@@ -3,6 +3,7 @@ import 'package:bluecoffee_client/Bloc/Table/TableBloc.dart';
 import 'package:bluecoffee_client/Bloc/Tables/TablesBloc.dart';
 import 'package:bluecoffee_client/Bloc/Tables/TablesState.dart';
 import 'package:bluecoffee_client/Model/TableModel.dart';
+import 'package:bluecoffee_client/ServerListener/ServerListener.dart';
 import 'package:bluecoffee_client/Views/MenuView.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +24,7 @@ class TablesView extends StatefulWidget {
   }
 }
 
-class TablesViewState extends State<TablesView> {
+class TablesViewState extends State<TablesView> implements StateListener {
   Widget _createListItem(BuildContext context, int index, TableModel table) {
     final int _tableNumber = table.tableID;
     int _drinkCount = 0;
@@ -36,7 +37,7 @@ class TablesViewState extends State<TablesView> {
     final tableIcon = new Container(
       alignment: new FractionalOffset(0.0, 0.5),
       child: new Hero(
-        tag: 'planet-icon-$index',
+        tag: 'table-item-$index',
         child: new CircleAvatar(
           child: new Text(
             '$_tableNumber',
@@ -57,39 +58,59 @@ class TablesViewState extends State<TablesView> {
         boxShadow: <BoxShadow>[
           new BoxShadow(
               color: Colors.black,
-              blurRadius: 10.0,
-              offset: new Offset(0.0, 10.0))
+              blurRadius: 5.0,
+              offset: new Offset(0.0, 5.0))
         ],
       ),
       child: new Container(
-        margin: const EdgeInsets.only(top: 16.0, left: 72.0),
-        constraints: new BoxConstraints.expand(),
-        child: new Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            new Text('Bàn số: $_tableNumber',
-                style: Theme.TextStyles.tableTitle),
-            new Text(DateFormat('kk:mm  dd-MM-yyyy').format(table.startDate),
-                style: Theme.TextStyles.planetLocation),
-            new Container(
-                color: Colors.white,
-                width: 120.0,
-                height: 1.0,
-                margin: const EdgeInsets.symmetric(vertical: 8.0)),
-            new Row(
-              children: <Widget>[
-                new Icon(Icons.local_bar, size: 16.0, color: Colors.white),
-                new Text(' $_drinkCount',
-                    style: Theme.TextStyles.tableDistance),
-                new Container(width: 24.0),
-                new Icon(Icons.attach_money, size: 16.0, color: Colors.white),
-                new Text(' ${NumberFormat("#,###.##").format(_totalMonney)}',
-                    style: Theme.TextStyles.tableDistance),
-              ],
-            )
-          ],
-        ),
-      ),
+          margin: const EdgeInsets.only(top: 16.0, left: 72.0),
+          constraints: new BoxConstraints.expand(),
+          child: new Row(
+            children: <Widget>[
+              new Expanded(
+                child: new Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    new Text('Bàn số: $_tableNumber',
+                        style: Theme.TextStyles.tableTitle),
+                    new Text(
+                        DateFormat('kk:mm  dd-MM-yyyy').format(table.startDate),
+                        style: Theme.TextStyles.planetLocation),
+                    new Container(
+                        color: Colors.white,
+                        width: 120.0,
+                        height: 1.0,
+                        margin: const EdgeInsets.symmetric(vertical: 8.0)),
+                    new Row(
+                      children: <Widget>[
+                        new Icon(Icons.local_bar,
+                            size: 16.0, color: Colors.white),
+                        new Text(' $_drinkCount',
+                            style: Theme.TextStyles.tableDistance),
+                        new Container(width: 24.0),
+                        new Icon(Icons.attach_money,
+                            size: 16.0, color: Colors.white),
+                        new Text(
+                            ' ${NumberFormat("#,###.##").format(_totalMonney)}',
+                            style: Theme.TextStyles.tableDistance),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+              new Container(
+                  margin: EdgeInsets.only(right: 5.0),
+                  child: new IconButton(
+                    icon: table.isDone? Icon(Icons.check_box) : Icon(Icons.check_box_outline_blank),
+                    onPressed: () {
+                      table.isDone = !table.isDone;
+                      BlocProvider.of<TablesBloc>(context).UpdateTable(table);
+                    },
+                    iconSize: 25.0,
+                    color: Colors.white,
+                  )),
+            ],
+          )),
     );
 
     return new Container(
@@ -130,7 +151,7 @@ class TablesViewState extends State<TablesView> {
               onPressed: () {
                 Navigator.of(context)
                     .push<TableModel>(new MaterialPageRoute(builder: (context) {
-                  var _table = new TableModel(Random().nextInt(99));
+                  var _table = new TableModel(tableID:Random().nextInt(99));
                   var _tableBloc = new TableBloc(_table);
                   //return new MenuView(new MenuBloc(_tableBloc));
                   return new MenuView_NewUI(new MenuBloc(_tableBloc));
@@ -169,5 +190,17 @@ class TablesViewState extends State<TablesView> {
             backgroundColor: Theme.Colors.planetPageBackground,
           );
         });
+  }
+
+  @override
+  initState(){  
+    super.initState();   
+    var stateProvider = new StateProvider();
+    stateProvider.subscribe(this);
+  }
+  
+  @override
+  void onStateChanged(ServerState state) {
+    // TODO: implement onStateChanged
   }
 }

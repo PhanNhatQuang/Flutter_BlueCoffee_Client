@@ -16,35 +16,40 @@ class TableBloc extends Bloc<TableEvent, TableState> {
   Stream<TableState> mapEventToState(
       TableState currentState, TableEvent event) async* {
     TableState _newState;
-    if (event is AddOrders) {
-      if(m_Table.orders.length > 0)
+    if (event is AddOrders) {      
+      if( m_Table?.orders == null)
       {
-        var _order = m_Table.orders.firstWhere((order) => order.drink.drinkID == event.m_Drink.drinkID,orElse: () => null);
-        if(_order != null)
-        {
-          m_Table.orders.elementAt(m_Table.orders.indexOf(_order)).amount++;        
-        }
-        else
-        {
-          m_Table.orders.add(new OrderModel(event.m_Drink, 1));
-        }
+        currentState.m_Table.orders = new List<OrderModel>();
+      }
+      if(m_Table?.orders?.length == 0 )
+      {
+        currentState.m_Table.orders.add(new OrderModel(drink: event.m_Drink,amount: 1));
       }
       else
       {
-        m_Table.orders.add(new OrderModel(event.m_Drink, 1));
+        var _order = currentState.m_Table.orders.firstWhere((order) => order.drink.drinkID == event.m_Drink.drinkID,orElse: () => null);
+        if(_order != null)
+        {
+          currentState.m_Table.orders.elementAt(currentState.m_Table.orders.indexOf(_order)).amount++;        
+        }
+        else
+        {
+          currentState.m_Table.orders.add(new OrderModel(drink:event.m_Drink,amount: 1));
+        }
       }
-      m_Table.totalMoney+=event.m_Drink.drinkPrice;
-      m_Table.drinkCount++;
+      currentState.m_Table.totalMoney+=event.m_Drink.drinkPrice;
+      currentState.m_Table.drinkCount++;
     } else if (event is RemoveOrders) {
-      if (m_Table.orders != null) {
-        var _order = m_Table.orders.firstWhere((order) => order.drink.drinkID == event.m_Drink.drinkID);
+      if (currentState.m_Table.orders != null) {
+        var _order = currentState.m_Table.orders.firstWhere((order) => order.drink.drinkID == event.m_Drink.drinkID);
         if(_order != null)
         {
           if(_order.amount > 1)
-            m_Table.orders.elementAt(m_Table.orders.indexOf(_order)).amount--;
+            currentState.m_Table.orders.elementAt(currentState.m_Table.orders.indexOf(_order)).amount--;
           else
-            m_Table.orders.removeAt(m_Table.orders.indexOf(_order));
-          m_Table.totalMoney-=_order.drink.drinkPrice;
+            currentState.m_Table.orders.removeAt(currentState.m_Table.orders.indexOf(_order));
+          currentState.m_Table.totalMoney-=_order.drink.drinkPrice;
+          currentState.m_Table.drinkCount--;
         }
       }
     } else if (event is Paid) {

@@ -19,6 +19,7 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
     MenuState _newState;
     if (event is IncrementDrinkEvent) {
       m_TableBloc.addOrder(event.m_Drink);
+      print(event.m_Drink.toJson());
      
     } else if (event is DecrementDrinkEvent) {
       m_TableBloc.removeOrder(event.m_Drink);

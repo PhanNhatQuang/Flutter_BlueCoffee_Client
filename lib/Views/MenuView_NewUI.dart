@@ -1,9 +1,7 @@
 import 'package:bluecoffee_client/Bloc/Menu/MenuBloc.dart';
 import 'package:bluecoffee_client/Bloc/Menu/MenuState.dart';
-import 'package:bluecoffee_client/Bloc/Table/TableBloc.dart';
 import 'package:bluecoffee_client/Model/DrinkModel.dart';
-import 'package:bluecoffee_client/Model/TableModel.dart';
-import 'package:bluecoffee_client/Views/TableDetailView.dart';
+import 'package:bluecoffee_client/ServerListener/ServerListener.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -19,7 +17,7 @@ class MenuView_NewUI extends StatefulWidget {
   }
 }
 
-class MenuViewNewUIState extends State<MenuView_NewUI> {
+class MenuViewNewUIState extends State<MenuView_NewUI> implements StateListener{
   MenuViewNewUIState(this.menuBloc);
   MenuBloc menuBloc;
 
@@ -41,15 +39,14 @@ class MenuViewNewUIState extends State<MenuView_NewUI> {
         MediaQuery.of(context).padding.bottom;
     final double barHeight = 60.0;
     ///////////////////////////////////
-    
+
     //////////////////////////////////////////
     return new BlocBuilder(
         bloc: menuBloc,
         builder: (BuildContext context, MenuState menuState) {
           /////////////////////////////////////////////////////
-        String _bottomBarActionString;
-        menuState.m_TableBloc.getTable.isNew ? _bottomBarActionString = 'Chi tiết' : _bottomBarActionString = 'Xong';
-        ////////////////////////////////////////////////
+          String _bottomBarActionString = 'Xong';
+          ////////////////////////////////////////////////
           return new Scaffold(
             key: _scaffoldKey,
             appBar: new AppBar(
@@ -80,7 +77,7 @@ class MenuViewNewUIState extends State<MenuView_NewUI> {
                       shrinkWrap: true,
                       scrollDirection: Axis.vertical,
                       padding: const EdgeInsets.all(4.0),
-                      children: menuState.m_Menu.map((DrinkModel drinkmodel) {
+                      children: menuState.m_Menu.m_ListDrink.map((DrinkModel drinkmodel) {
                         return CreateTravelDestinationItem(drinkmodel);
                       }).toList(),
                     ),
@@ -88,8 +85,8 @@ class MenuViewNewUIState extends State<MenuView_NewUI> {
                 )
               ],
             ),
-            bottomNavigationBar: menuState.m_TableBloc.getTable.orders.length !=
-                    0
+            bottomNavigationBar:( menuState.m_TableBloc.getTable?.orders?.length != 0 &&
+                menuState.m_TableBloc.getTable?.orders != null) 
                 ? new Container(
                     padding:
                         new EdgeInsets.only(top: bottomNavigationBarHeight),
@@ -100,17 +97,17 @@ class MenuViewNewUIState extends State<MenuView_NewUI> {
                         children: <Widget>[
                           new Container(
                             width: 50.0,
-                                child: Stack(
-                                  children: <Widget>[
-                                    new Icon(
-                                          Icons.local_bar,
-                                          color: Colors.white,
-                                          size: 35.0,
-                                        ),
-                                    new Positioned(
-                                      left: 20.0,
-                                      bottom: 17.0,
-                                        child: new Stack(
+                            child: Stack(
+                              children: <Widget>[
+                                new Icon(
+                                  Icons.local_bar,
+                                  color: Colors.white,
+                                  size: 35.0,
+                                ),
+                                new Positioned(
+                                    left: 20.0,
+                                    bottom: 17.0,
+                                    child: new Stack(
                                       children: <Widget>[
                                         new Icon(Icons.brightness_1,
                                             size: 20.0,
@@ -132,9 +129,9 @@ class MenuViewNewUIState extends State<MenuView_NewUI> {
                                             )),
                                       ],
                                     )),
-                                  ],
-                                ),
+                              ],
                             ),
+                          ),
                           // new Expanded(
                           //   child: new Row(
                           //     children: <Widget>[
@@ -150,39 +147,34 @@ class MenuViewNewUIState extends State<MenuView_NewUI> {
                           new Expanded(
                             child: new Row(
                               children: <Widget>[
-                                new Icon(Icons.attach_money, size: 30.0, color: Colors.white),
-                                new Text('${NumberFormat("#,###.##").format(menuState.m_TableBloc.getTable.totalMoney)}',
-                                    style: theme.TextStyles.tableDetailDistance),
+                                new Icon(Icons.attach_money,
+                                    size: 30.0, color: Colors.white),
+                                new Text(
+                                    '${NumberFormat("#,###.##").format(menuState.m_TableBloc.getTable.totalMoney)}',
+                                    style:
+                                        theme.TextStyles.tableDetailDistance),
                               ],
                             ),
                           ),
                           new Container(
-                              margin: EdgeInsets.only(right: 10.0),
-                              child: new FlatButton(
-                                onPressed: () {
-                                  Navigator.of(context).push<TableModel>(
-                                      new MaterialPageRoute(builder: (context) {
-                                    menuState.m_TableBloc.getTable.startDate =
-                                        new DateTime.now();
-                                    return new TableDetailView(
-                                        menuState.m_TableBloc);
-                                  }))
-                                    ..then<TableModel>((onValue) {
-                                      Navigator.of(context)
-                                          .pop(menuState.m_TableBloc.getTable);
-                                    });
-                                },
-                                child: new Row(
-                                  children: <Widget>[
-                                    new Text(
-                                      '${_bottomBarActionString}',
-                                      style: theme.TextStyles.appBarTitle,
-                                    ),
-                                    new Icon(Icons.arrow_forward_ios,
-                                        size: 30.0, color: Colors.white),
-                                  ],
-                                ),
-                              )),
+                            margin: EdgeInsets.only(right: 10.0),
+                            child: new FlatButton(
+                              child: new Row(
+                                children: <Widget>[
+                                  new Text(
+                                    '${_bottomBarActionString}',
+                                    style: theme.TextStyles.appBarTitle,
+                                  ),
+                                  new Icon(Icons.arrow_forward_ios,
+                                      size: 30.0, color: Colors.white),
+                                ],
+                              ),
+                              onPressed: () {
+                                  menuState.m_TableBloc.getTable.startDate = new DateTime.now();
+                                  Navigator.of(context).pop(menuState.m_TableBloc.getTable);
+                              },
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -205,10 +197,6 @@ class MenuViewNewUIState extends State<MenuView_NewUI> {
 
   Widget CreateTravelDestinationItem(DrinkModel _iDrink) {
     ShapeBorder shape;
-    final ThemeData theme = Theme.of(context);
-
-    final TextStyle descriptionStyle = theme.textTheme.subhead;
-
     return SafeArea(
         top: false,
         bottom: false,
@@ -231,7 +219,7 @@ class MenuViewNewUIState extends State<MenuView_NewUI> {
                         children: <Widget>[
                           Positioned.fill(
                             child: Image.asset(
-                              _iDrink.drinkImage,
+                              'images/coffee.jpg',
                               // package: _iDrink.assetPackage,
                               fit: BoxFit.cover,
                             ),
@@ -290,5 +278,16 @@ class MenuViewNewUIState extends State<MenuView_NewUI> {
                 ),
               ),
             )));
+  }
+
+@override
+  initState(){  
+    super.initState();   
+    var stateProvider = new StateProvider();
+    stateProvider.subscribe(this);
+  }
+  @override
+  void onStateChanged(ServerState state) {
+    // TODO: implement onStateChanged
   }
 }
